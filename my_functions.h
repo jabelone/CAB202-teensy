@@ -115,9 +115,20 @@ void drawFilledRect(int x1, int y1, int x2, int y2) {
 
 void drawBorder() { drawRect(0, 0, 84, 48); } // Draw a dank border
 
+void centerString (unsigned char y, char* string) {
+    unsigned char n = 0;
+    while (string[n] != '\0') { n++; }
+    char x = 42-(n*5/2);
+    draw_string((x > 0) ? x : 0, y, string);
+}
+
 void initScreen() {
     lcd_init(LCD_DEFAULT_CONTRAST); // Initialise the LCD with low contrast
     clear_screen(); // Clear the screen
+    centerString(5, "CAB202 Snek");
+    centerString(15, "Jaimyn Mayer");
+    centerString(25, "n9749331");
+    centerString(35, "Sem2 2016");
     drawRect(0, 0, 84, 48); // Draw a dank border
     show_screen();
 
@@ -144,5 +155,5 @@ void initScreen() {
     lcdLight(1);
     led0(0);
     led1(0);
-    _delay_ms(500);
+    _delay_ms(2000);
 }
