@@ -3,13 +3,13 @@
 // This sets every pin to the correct direction (INPUT or OUTPUT)
 void setup() {
     // B REGISTER
-    DDRB &= (0 << 0); //Set SWCENTER as INPUT
-    DDRB &= (0 << 1); //Set SWB as INPUT
+    DDRB &= ~(1 << 0); //Set SWCENTER as INPUT
+    DDRB &= ~(1 << 1); //Set SWB as INPUT
     DDRB |= (1 << 2); //Set LED0 as OUTPUT
     DDRB |= (1 << 3); //Set LED1 as OUTPUT
-    DDRB |= (1 << 4); //Set LCD_RST as OUTPUT
-    DDRB |= (1 << 5); //Set LCD_DC as OUTPUT
-    DDRB |= (1 << 6); //Set LCD_DIN as OUTPUT
+    //DDRB |= (1 << 4); //Set LCD_RST as OUTPUT
+    //DDRB |= (1 << 5); //Set LCD_DC as OUTPUT
+    //DDRB |= (1 << 6); //Set LCD_DIN as OUTPUT
     DDRB |= ~(1 << 7); //Set SWA as INPUT
 
     // C REGISTER
@@ -17,19 +17,19 @@ void setup() {
     DDRC |= (1<<7); //Set LCD_LED_CTL as OUTPUT
 
     // D REGISTER
-    DDRD &= (0<<0); //Set SWD as INPUT
-    DDRD &= (0<<1); //Set SWC as INPUT
+    DDRD &= ~(1<<0); //Set SWD as INPUT
+    DDRD &= ~(1<<1); //Set SWC as INPUT
     //DDRD &= ~(1<<2); DON'T TOUCH!! (RX)
     //DDRD &= ~(1<<3); DON'T TOUCH!! (TX)
-    DDRD |= (1<<7); //Set LCD_SCE as OUTPUT
+    //DDRD |= (1<<7); //Set LCD_SCE as OUTPUT
 
     // F REGISTER
-    DDRF &= (0<<0); //Set ADC0 (Pot0) as INPUT
-    DDRF &= (0<<1); //Set ADC1 (Pot1) as INPUT
+    DDRF &= ~(1<<0); //Set ADC0 (Pot0) as INPUT
+    DDRF &= ~(1<<1); //Set ADC1 (Pot1) as INPUT
     //DDRF &= ~(1<<4); //Set S1 as INPUT (expansion header)
-    DDRF &= (0<<5); //Set switch 3 as INPUT
-    DDRF &= (0<<6); //Set switch 2 as INPUT
-    DDRF |= (1<<6); //Set LCD_SCK as OUTPUT
+    DDRF &= ~(1<<5); //Set switch 3 as INPUT
+    DDRF &= ~(1<<6); //Set switch 2 as INPUT
+    //DDRF |= (1<<6); //Set LCD_SCK as OUTPUT
 }
 
 // Control the state of LED0
@@ -94,4 +94,55 @@ int readPot(int pot) {
     else if (pot == 3) { return (PINF>>5) & 1; }
 
     else { return 0; }
+}
+
+void drawRect(int x1, int y1, int x2, int y2) {
+    draw_line(x1, y1, x2-1, y1); // Draw top
+    draw_line(x2-1, y1, x2-1, y2-1); // Draw right
+    draw_line(x2-1, y2-1, x1, y2-1); // Draw bottom
+    draw_line(x1, y2-1, x1, y1); // Draw left
+}
+
+void drawFilledRect(int x1, int y1, int x2, int y2) {
+    //int y = y2-y1;
+    int a;
+
+    for (a = y1; a < y2; a++) {
+        draw_line(x1, a, x2-1, a); // Draw line
+    }
+
+}
+
+void drawBorder() { drawRect(0, 0, 84, 48); } // Draw a dank border
+
+void initScreen() {
+    lcd_init(LCD_DEFAULT_CONTRAST); // Initialise the LCD with low contrast
+    clear_screen(); // Clear the screen
+    drawRect(0, 0, 84, 48); // Draw a dank border
+    show_screen();
+
+    lcdLight(1);
+    led0(1);
+    led1(0);
+    _delay_ms(500);
+
+    lcdLight(0);
+    led0(0);
+    led1(1);
+    _delay_ms(500);
+
+    lcdLight(1);
+    led0(1);
+    led1(0);
+    _delay_ms(500);
+
+    lcdLight(0);
+    led0(0);
+    led1(1);
+    _delay_ms(500);
+
+    lcdLight(1);
+    led0(0);
+    led1(0);
+    _delay_ms(500);
 }
