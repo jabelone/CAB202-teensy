@@ -62,6 +62,15 @@ int readSwitch(int num) {
     else { return 0; }
 }
 
+#define soft_reset()        \
+do                          \
+{                           \
+    wdt_enable(WDTO_15MS);  \
+    for(;;)                 \
+    {                       \
+    }                       \
+} while(0)
+
 // Returns the state of the specified direction of the joystick
 int readJoy(char * button){
     if (strcmp(button, "up") == 0) {
@@ -113,13 +122,56 @@ void drawFilledRect(int x1, int y1, int x2, int y2) {
 
 }
 
-void drawBorder() { drawRect(0, 0, 84, 48); } // Draw a dank border
+void drawBorder() { drawRect(0, 10, 84, 48); } // Draw a dank border
+void drawDankBorder() { drawRect(0, 0, 84, 48); } // Draw a dank border
 
 void centerString (unsigned char y, char* string) {
     unsigned char n = 0;
     while (string[n] != '\0') { n++; }
     char x = 42-(n*5/2);
     draw_string((x > 0) ? x : 0, y, string);
+}
+
+
+uint16_t adc_read(uint8_t ch) {
+    // select the corresponding channel 0~7
+    // ANDing with '7' will always keep the value
+    // of 'ch' between 0 and 7
+    ch &= 0b00000111;  // AND operation with 7
+    ADMUX = (ADMUX & 0xF8)|ch;     // clears the bottom 3 bits before ORing
+
+    // start single conversion
+    // write '1' to ADSC
+    ADCSRA |= (1<<ADSC);
+
+    // wait for conversion to complete
+    // ADSC becomes '0' again
+    // till then, run loop continuously
+    while(ADCSRA & (1<<ADSC));
+
+    return (ADC);
+}
+
+int potPosition() {
+    uint16_t adc = adc_read(1);
+
+    float max_adc = 1023.0;
+    long max_lcd_adc = (adc*(long)(LCD_X - 12)) / max_adc;
+
+    return max_lcd_adc + 2;
+}
+
+void flashLeds(int times) {
+    for (int i = 1; i <= times; i++) {
+        led0(1);
+        led1(0);
+        lcdLight(0);
+        _delay_ms(250);
+        led0(0);
+        led1(1);
+        lcdLight(1);
+        _delay_ms(250);
+    }
 }
 
 void initScreen() {
@@ -132,25 +184,7 @@ void initScreen() {
     drawRect(0, 0, 84, 48); // Draw a dank border
     show_screen();
 
-    lcdLight(1);
-    led0(1);
-    led1(0);
-    _delay_ms(500);
-
-    lcdLight(0);
-    led0(0);
-    led1(1);
-    _delay_ms(500);
-
-    lcdLight(1);
-    led0(1);
-    led1(0);
-    _delay_ms(500);
-
-    lcdLight(0);
-    led0(0);
-    led1(1);
-    _delay_ms(500);
+    flashLeds(3);
 
     lcdLight(1);
     led0(0);
