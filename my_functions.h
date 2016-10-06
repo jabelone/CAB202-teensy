@@ -191,3 +191,32 @@ void initScreen() {
     led1(0);
     _delay_ms(2000);
 }
+
+int invertStatus = 0;
+
+void invertScreen(int input) {
+    if (input) { // If we should write inverted
+        invertStatus = 1;
+    }
+
+    else {
+        lcd_write(0, 0b00001100);
+        invertStatus = 0;
+    }
+}
+
+void setContrast(int input) {
+    lcd_write(LCD_C, 0x21); // Enable LCD extended command set
+    switch(input) {
+        case 0:
+            lcd_write(LCD_C, 0x80 | 0x2F ); // Set LCD Vop (Contrast)
+            break;
+        case 1:
+            lcd_write(LCD_C, 0x80 | 0x3F ); // Set LCD Vop (Contrast)
+            break;
+        case 2:
+            lcd_write(LCD_C, 0x80 | 0x4F ); // Set LCD Vop (Contrast)
+            break;
+    }
+    lcd_write(LCD_C, 0x20); // Enable LCD basic command set
+}

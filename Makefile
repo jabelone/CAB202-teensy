@@ -7,7 +7,7 @@
 #
 
 # Modify these
-SRC=lol
+SRC=week8-q3
 
 CAB202_LIB_DIR=./cab202_teensy
 
