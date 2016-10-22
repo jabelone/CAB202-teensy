@@ -1,0 +1,54 @@
+# Created by .ignore support plugin (hsz.mobi)
+### C template
+# Object files
+*.o
+*.ko
+*.obj
+*.elf
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Libraries
+*.lib
+*.a
+*.la
+*.lo
+
+# Shared objects (inc. Windows DLLs)
+*.dll
+*.so
+*.so.*
+*.dylib
+
+# Executables
+*.exe
+*.out
+*.app
+*.i*86
+*.x86_64
+*.hex
+
+# Debug files
+*.dSYM/
+*.su
+
+.idea/inspectionProfiles/
+.idea/vcs.xml
+.idea/workspace.xml
+submission/a2_n9749331.o
+submission/test.hex
+/Other/lol.elf
+/Other/kek.c
+/Other/kek
+/Other/lol.hex
+/Other/lol.o
+/Other/lol.c
+/Other/week8-q2.hex
+/Other/week8-q2.o
+/Other/week8-q3.hex
+/Other/week8-q3.o
+/Other/week9-q4.o
+/Other/week9-q4.hex
+/Other/49-teensy.rules
