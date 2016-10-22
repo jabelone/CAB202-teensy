@@ -35,10 +35,6 @@ set(SOURCE_FILES
         cab202_teensy/sprite.lst
         cab202_teensy/sprite.o
         Other/49-teensy.rules
-        Other/lol.c
-        Other/lol.elf
-        Other/lol.hex
-        Other/lol.o
         Other/Makefile
         Other/QUTTeensy_test.hex
         Other/teensy.64bit)
