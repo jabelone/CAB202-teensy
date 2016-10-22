@@ -368,7 +368,7 @@
   42:sprite.c      **** 			);
   43:sprite.c      **** 		}
   44:sprite.c      **** 	}
-  45:sprite.c      **** }
+  45:sprite.c      **** }...
  322               		.loc 1 45 0
  323 0116 0F90      		pop __tmp_reg__
  324 0118 0F90      		pop __tmp_reg__
@@ -398,13 +398,13 @@
  349               		.file 5 "graphics.h"
 DEFINED SYMBOLS
                             *ABS*:0000000000000000 sprite.c
-     /tmp/ccAlTqSt.s:2      *ABS*:000000000000003e __SP_H__
-     /tmp/ccAlTqSt.s:3      *ABS*:000000000000003d __SP_L__
-     /tmp/ccAlTqSt.s:4      *ABS*:000000000000003f __SREG__
-     /tmp/ccAlTqSt.s:5      *ABS*:0000000000000000 __tmp_reg__
-     /tmp/ccAlTqSt.s:6      *ABS*:0000000000000001 __zero_reg__
-     /tmp/ccAlTqSt.s:13     .text.init_sprite:0000000000000000 init_sprite
-     /tmp/ccAlTqSt.s:103    .text.draw_sprite:0000000000000000 draw_sprite
+     /tmp/ccxOSamg.s:2      *ABS*:000000000000003e __SP_H__
+     /tmp/ccxOSamg.s:3      *ABS*:000000000000003d __SP_L__
+     /tmp/ccxOSamg.s:4      *ABS*:000000000000003f __SREG__
+     /tmp/ccxOSamg.s:5      *ABS*:0000000000000000 __tmp_reg__
+     /tmp/ccxOSamg.s:6      *ABS*:0000000000000001 __zero_reg__
+     /tmp/ccxOSamg.s:13     .text.init_sprite:0000000000000000 init_sprite
+     /tmp/ccxOSamg.s:103    .text.draw_sprite:0000000000000000 draw_sprite
 
 UNDEFINED SYMBOLS
 __floatsisf

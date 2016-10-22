@@ -1,11 +1,11 @@
-
-
 //Other libraries
 #include <avr/io.h>
 #include <avr/wdt.h>
+#include <avr/interrupt.h>
 #include <util/delay.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 //CAB202 Libraries
 #include "lcd.h"
@@ -13,191 +13,70 @@
 #include "cpu_speed.h"
 #include "sprite.h"
 
+#define debounceDelay 10 // Debounce delay in ms
+int lives = 5; // Lives
+int score = 1;  // Our score
+int snekTrail = 1; // How many trailing snekz
+int randomX;
+int randomY;
+
+Sprite heart[5];
+Sprite snekz[25];
+Sprite foodz;
+
+unsigned char foodzbm[3] = {0x40, 0xA0, 0x40}; // Our food bitmap
+unsigned char snekzbm[2][3] = {{0xE0, 0xA0, 0xE0}, {0xE0, 0xE0, 0xE0}}; // Our snek bitmaps (1 for head, 1 for body)
+unsigned char heartbm[5] = {0x36, 0x7F, 0x3E, 0x1C, 0x08}; // Our heart bitmap
+
 //All my helper functions
 #include "my_functions.h"
 
-#define MOVE_DELAY 3 // Approximate refresh rate in hertz (Hz)
-int moveAmount = 2; // How many pixels to move each time
-int squareSize = 3; // Size of the "character square"
+int main() {
+    initADC();
+    srand(readADC(0));
+    randomX = rand() % 84;
+    randomY = (rand() % (48 + 1 - 6)) + 6;
 
-int dotX = 0; // Start the character square at x of 39
-int dotY = 0; // Start the character square at y of 22
+    set_clock_speed(CPU_8MHz);
+    setupIO(); // Run meh setup code
+    initScreen(0); // Run meh screen setup code
+    setupSprites();
+    foodz.x = randomX;
+    foodz.y = randomY;
 
-// Variable we use for game state - NOT CONFIGURABLE!
-int dirX = 0; // Direction of x
-int dirY = 0; // Direction of y
-int xMod = 0; // Compensate by this amount when moving
-int yMod = 0; // Makes it nicer to look at when moving
-int lives = 3; // Lives
-int tick = 0;
-char str[10];
-
-// Define our sprites
-unsigned char heart[5}] = {0x0C, 0x3e, 0x7c, 0x3e, 0x0C}; // Our heart
-
-Sprite heart;
-
-int main(){
-	set_clock_speed(CPU_8MHz);
-    setup(); // Run meh setup code
-    initScreen(); // Run meh screen setup code
-    dotX = rand();
-    dotY = rand();
-
-    while(1){
-
-        tick++;
-
-        if (readJoy("left") == 1) { // If the left joystick button is pressed
-            if (dirX == 2) { // If user tries to go back
-                flashLeds(2);
-                lives --;
-                dirX = 2;
-                dirY = 0;
-                led0(0);
-                led1(1);
-            }
-            else {
-                led0(1);
-                led1(0);
-                dirX = 1;
-                dirY = 0;
-            }
-        }
-
-        else if (readJoy("right") == 1) { // If the right joystick button is pressed
-            if (dirX == 1) { // If user tries to go back
-                flashLeds(2);
-                lives --;
-                dirX = 1;
-                dirY = 0;
-                led0(1);
-                led1(0);
-            }
-            else {
-                led0(0);
-                led1(1);
-                dirX = 2;
-                dirY = 0;
-            }
-        }
-
-        else if (readJoy("up") == 1) { // If the up joystick button is pressed
-            if (dirY == 2) {
-                flashLeds(2);
-                lives --;
-                dirX = 0;
-                dirY = 2;
-                led0(1);
-                led1(0);
-            }
-            else {
-                led0(1);
-                led1(1);
-                dirX = 0;
-                dirY = 1;
-            }
-        }
-
-        else if (readJoy("down") == 1) { // If the down joystick button is pressed
-            if (dirY == 1) {
-                flashLeds(2);
-                lives --;
-                dirX = 0;
-                dirY = 1;
-                led0(1);
-                led1(0);
-            }
-            led0(0);
-            led1(0);
-            dirX = 0;
-            dirY = 2;
-        }
-
-        else if (readJoy("center") == 1) { // If the center joystick button is pressed
-            PORTB ^= _BV(PB2);
-            PORTB ^= _BV(PB3);
-            _delay_ms(100);
-        }
-
-        if (dirX == 1) { // If we should move left
-            dotX -= moveAmount;
-            xMod = 0;
-            yMod = 0;
-        }
-
-        else if (dirX == 2) { // If we should move right
-            dotX += moveAmount;
-            xMod = 0;
-            yMod = 0;
-        }
-
-        if (dirY == 1) { // If we should move left
-            dotY -= moveAmount;
-            xMod = 0;
-            yMod = 0;
-        }
-
-        else if (dirY == 2) { // If we should move right
-            dotY += moveAmount;
-            xMod = 0;
-            yMod = 0;
-        }
-
-        if (dotX > 80) { // If we hit the right side then wrap around
-            dotX = 1;
-        }
-
-        else if (dotX < 1) { // If we hit the left side then wrap around
-            dotX = 80;
-        }
-
-        if (dotY > 44) { // If we hit the bottom side then wrap around
-            dotY = 11;
-        }
-
-        else if (dotY < 11) { // If we hit the top side then wrap around
-            dotY = 44;
-        }
+    while (1) {
 
         if (lives < 1) {
-            led0(0);
-            led1(0);
-            clear_screen();
-            drawDankBorder();
-            centerString(15, "GAME OVER");
-            centerString(25, "DUDE!");
-            show_screen();
-            for (int i = 0; i < 2; i++) {
-                lcdLight(0);
-                _delay_ms(500);
-                lcdLight(1);
-                _delay_ms(500);
-            }
-            _delay_ms(2000);
-            soft_reset();
+            gameOver();  // If we die, end the game - does a soft reset so it starts again.
         }
 
-        clear_screen(); // Clear the previous frame
-        itoa(tick, str, 10);
-        char buffer[80];
-        strcpy(buffer, " ");
-        strcat(buffer, str);
-        if (lives == 3) { strcat(buffer, "    # # #"); }
-        else if (lives == 2) { strcat(buffer, "    # #"); }
-        else if (lives == 1) { strcat(buffer, "    #"); }
-        drawFilledRect(dotX+xMod, dotY+yMod, dotX+3, dotY+3); // Draw the character square
-        drawBorder();
-        draw_string(0, 0, buffer);
-        _delay_ms(1000/MOVE_DELAY);
-        show_screen();
-
-        if (readSwitch(2)) {
-            _delay_ms(50);
-            if (readSwitch(2)) {
-                PORTC ^= _BV(PC7);
+        if (readJoy("left")) {
+            _delay_ms(debounceDelay);
+            if (readJoy("left")) {
+                snekz[0].dx = -1;
+            }
+        }
+        if (readJoy("right")) {
+            _delay_ms(debounceDelay);
+            if (readJoy("right")) {
+                snekz[0].dx = 1;
             }
         }
 
-	}
+        clear_screen(); // Clear the last frame so we can draw the next one
+
+        char int_buf[10];
+        //char disp_buf[32];
+        itoa(readADC(1)/200+1, int_buf, 10);
+        //sprintf(disp_buf,"ADC1 = %s",int_buf);
+        //centerString(25, disp_buf);
+
+        collideFood();
+        moveSnek(readADC(1)/300+1);
+        drawHearts(lives); // Update the hearts (lives left)
+        drawSprites(); // Update all the sprites
+
+        show_screen(); // Push everything to the LCD
+        _delay_ms(10); // Make it a bit smoother
+    }
 }

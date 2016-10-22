@@ -1,4 +1,5 @@
-// All mah functions
+/////////////////////////////////////////////////  HELPER FUNCTIONS   /////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // The two functions below disable the watchdog timer after a reset stopping infinite resets
 // Function Prototype
@@ -14,7 +15,7 @@ void wdt_init(void)
 }
 
 // This sets every pin to the correct direction (INPUT or OUTPUT)
-void setup() {
+void setupIO() {
     // B REGISTER
     DDRB &= ~(1 << 0); //Set SWCENTER as INPUT
     DDRB &= ~(1 << 1); //Set SWB as INPUT
@@ -43,6 +44,12 @@ void setup() {
     DDRF &= ~(1<<5); //Set switch 3 as INPUT
     DDRF &= ~(1<<6); //Set switch 2 as INPUT
     //DDRF |= (1<<6); //Set LCD_SCK as OUTPUT
+
+    // Initialise the ADC with a prescaler of 128
+    ADMUX = (1<<REFS0);
+    ADCSRA = (1<<ADEN)|(1<<ADPS2)|(1<<ADPS1)|(1<<ADPS0);
+
+    sei(); // Globally enables interrupts.
 }
 
 // Control the state of LED0
@@ -109,15 +116,6 @@ int readJoy(char * button){
     return 2;
 }
 
-// Returns the state of the specified potentiometer
-int readPot(int pot) {
-    if (pot == 2) { return (PINF>>6) & 1; }
-
-    else if (pot == 3) { return (PINF>>5) & 1; }
-
-    else { return 0; }
-}
-
 void drawRect(int x1, int y1, int x2, int y2) {
     draw_line(x1, y1, x2-1, y1); // Draw top
     draw_line(x2-1, y1, x2-1, y2-1); // Draw right
@@ -125,19 +123,10 @@ void drawRect(int x1, int y1, int x2, int y2) {
     draw_line(x1, y2-1, x1, y1); // Draw left
 }
 
-void drawFilledRect(int x1, int y1, int x2, int y2) {
-    //int y = y2-y1;
-    int a;
-
-    for (a = y1; a < y2; a++) {
-        draw_line(x1, a, x2-1, a); // Draw line
-    }
-
-}
-
-void drawBorder() { drawRect(0, 10, 84, 48); } // Draw a dank border
+void drawBorder() { drawRect(0, 10, 84, 48); } // Draw a border
 void drawDankBorder() { drawRect(0, 0, 84, 48); } // Draw a dank border
 
+// Draws a string that's centred in x direction
 void centerString (unsigned char y, char* string) {
     unsigned char n = 0;
     while (string[n] != '\0') { n++; }
@@ -145,8 +134,69 @@ void centerString (unsigned char y, char* string) {
     draw_string((x > 0) ? x : 0, y, string);
 }
 
+// Flashes LEDs alternatively, x times
+void flashLeds(int times) {
+    for (int i = 1; i <= times; i++) {
+        led0(1);
+        led1(0);
+        lcdLight(0);
+        _delay_ms(250);
+        led0(0);
+        led1(1);
+        lcdLight(1);
+        _delay_ms(250);
+    }
+}
 
-uint16_t adc_read(uint8_t ch) {
+// Init all the screen stuffs
+void initScreen(int flash) {
+    lcd_init(LCD_DEFAULT_CONTRAST); // Initialise the LCD with default contrast
+    clear_screen(); // Clear the screen
+
+    if (flash) {
+        centerString(5, "CAB202 Snek");
+        centerString(15, "Jaimyn Mayer");
+        centerString(25, "n9749331");
+        centerString(35, "Sem2 2016");
+        drawRect(0, 0, 84, 48); // Draw a dank border
+        show_screen();
+        flashLeds(3);
+        led0(0);
+        led1(0);
+        _delay_ms(2000);
+    }
+
+    lcdLight(1);
+    clear_screen();
+}
+
+// Inverts the display mode
+int invertStatus = 0;
+void invertScreen(int input) {
+    if (input) { // If we should write inverted
+        invertStatus = 1;
+    }
+
+    else {
+        lcd_write(0, 0b00001100);
+        invertStatus = 0;
+    }
+}
+
+// Init the ADC
+void initADC()
+{
+    // AREF = AVcc
+    ADMUX = (1<<REFS0);
+
+    // ADC Enable and pre-scaler of 128
+    // 8000000/128 = 62500
+    ADCSRA = (1<<ADEN)|(1<<ADPS2)|(1<<ADPS1)|(1<<ADPS0);
+}
+
+// Read the ADC value
+uint16_t readADC(uint8_t ch)
+{
     // select the corresponding channel 0~7
     // ANDing with '7' will always keep the value
     // of 'ch' between 0 and 7
@@ -165,71 +215,111 @@ uint16_t adc_read(uint8_t ch) {
     return (ADC);
 }
 
-int potPosition() {
-    uint16_t adc = adc_read(1);
+void draw_sprite2(Sprite* sprite, int width) {
+    // Do nothing if not visible
+    if (!sprite->is_visible) {
+        return;
+    }
 
-    float max_adc = 1023.0;
-    long max_lcd_adc = (adc*(long)(LCD_X - 12)) / max_adc;
-
-    return max_lcd_adc + 2;
-}
-
-void flashLeds(int times) {
-    for (int i = 1; i <= times; i++) {
-        led0(1);
-        led1(0);
-        lcdLight(0);
-        _delay_ms(250);
-        led0(0);
-        led1(1);
-        lcdLight(1);
-        _delay_ms(250);
+    // Loop through the bit-packed bitmap data, drawing each individual bit
+    // (assume that the bitmap size is h * ceil(w/8))
+    unsigned char dx, dy, byte_width = ceil(sprite->width / 8.0f);
+    for (dy = 0; dy<sprite->height; dy++) {
+        for (dx = 0; dx<sprite->width; dx++) {
+            set_pixel(
+                    (unsigned char) sprite->x+dx,
+                    (unsigned char) sprite->y+dy,
+                    (sprite->bitmap[(int) (dy*byte_width+floor(dx/width))] >> (7 - dx%8)) & 1 // ouch...
+            );
+        }
     }
 }
 
-void initScreen() {
-    lcd_init(LCD_DEFAULT_CONTRAST); // Initialise the LCD with low contrast
-    clear_screen(); // Clear the screen
-    centerString(5, "CAB202 Snek");
-    centerString(15, "Jaimyn Mayer");
-    centerString(25, "n9749331");
-    centerString(35, "Sem2 2016");
-    drawRect(0, 0, 84, 48); // Draw a dank border
-    show_screen();
+////////////////////////////////////////////////////// GAME LOGIC //////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Set up and initialise all of our sprites
+void setupSprites() {
+    // Our foodz
+    init_sprite(&foodz, 10, 15, 8, 3, foodzbm);
+    foodz.dx = 0;
+    foodz.dy = 0;
+    foodz.is_visible = 1;
 
-    flashLeds(3);
+    // Our snekz
+    init_sprite(&snekz[0], 5, 10, 8, 3, snekzbm[0]);
+    for (int i = 1; i < 25; i++) {
+        init_sprite(&snekz[i], i * 4, 10, 8, 3, snekzbm[1]);
+        snekz[i].dx = 0;
+        snekz[i].dy = 0;
+        snekz[i].is_visible = 0;
+    }
+    snekz[0].is_visible = 1;
 
-    lcdLight(1);
+    // Our heart/lives indicator
+    for (int i = 0; i < 5; i++) {
+        init_sprite(&heart[i], 76-i*8, 0, 8, 5, heartbm);
+        heart[i].dx = 0;
+        heart[i].dy = 0;
+        heart[i].is_visible = 1;
+    }
+}
+
+// Reset etc when it's game over
+void gameOver() {
     led0(0);
     led1(0);
+    clear_screen();
+    drawDankBorder();
+    centerString(15, "GAME OVER");
+    centerString(25, "DUDE!");
+    show_screen();
+    for (int i = 0; i < 2; i++) {
+        lcdLight(0);
+        _delay_ms(500);
+        lcdLight(1);
+        _delay_ms(500);
+    }
     _delay_ms(2000);
+    soft_reset();
 }
 
-int invertStatus = 0;
+// Draw all of our sprites
+void drawSprites() {
 
-void invertScreen(int input) {
-    if (input) { // If we should write inverted
-        invertStatus = 1;
+    // Our snekz
+    for (int i = 0; i < 24; i++) {
+        draw_sprite2(&snekz[i], 3);
     }
 
-    else {
-        lcd_write(0, 0b00001100);
-        invertStatus = 0;
+    // Our heart/lives indicator
+    for (int i = 0; i < 5; i++) {
+        draw_sprite(&heart[i]);
+    }
+    // Our foodz
+    draw_sprite2(&foodz, 3);
+}
+
+// Draw our hearts (lives left)
+void drawHearts(int lives) {
+    for (int i = 0; i < lives; i++) {
+        heart[i].is_visible = 1;
+    }
+    for (int i = lives; i < 5; i++) {
+        heart[i].is_visible = 0;
     }
 }
 
-void setContrast(int input) {
-    lcd_write(LCD_C, 0x21); // Enable LCD extended command set
-    switch(input) {
-        case 0:
-            lcd_write(LCD_C, 0x80 | 0x2F ); // Set LCD Vop (Contrast)
-            break;
-        case 1:
-            lcd_write(LCD_C, 0x80 | 0x3F ); // Set LCD Vop (Contrast)
-            break;
-        case 2:
-            lcd_write(LCD_C, 0x80 | 0x4F ); // Set LCD Vop (Contrast)
-            break;
-    }
-    lcd_write(LCD_C, 0x20); // Enable LCD basic command set
+void collideFood() {
+}
+
+// Move snek according to dy dx values
+void moveSnek(int gameSpeed) {
+    snekz[0].x += snekz[0].dx * gameSpeed;
+    snekz[0].y += snekz[0].dy * gameSpeed;
+
+    if (snekz[0].x >= 84) { snekz[0].x = 0; }
+    else if (snekz[0].x < 1) { snekz[0].x = 83; }
+
+    if (snekz[0].y >= 45) { snekz[0].x = 6; }
+    else if (snekz[0].y <= 6) { snekz[0].x = 45; }
 }

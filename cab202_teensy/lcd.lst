@@ -345,14 +345,14 @@
  252               		.file 3 "ascii_font.h"
 DEFINED SYMBOLS
                             *ABS*:0000000000000000 lcd.c
-     /tmp/ccoYxPzr.s:2      *ABS*:000000000000003e __SP_H__
-     /tmp/ccoYxPzr.s:3      *ABS*:000000000000003d __SP_L__
-     /tmp/ccoYxPzr.s:4      *ABS*:000000000000003f __SREG__
-     /tmp/ccoYxPzr.s:5      *ABS*:0000000000000000 __tmp_reg__
-     /tmp/ccoYxPzr.s:6      *ABS*:0000000000000001 __zero_reg__
-     /tmp/ccoYxPzr.s:13     .text.lcd_write:0000000000000000 lcd_write
-     /tmp/ccoYxPzr.s:81     .text.lcd_init:0000000000000000 lcd_init
-     /tmp/ccoYxPzr.s:169    .text.lcd_clear:0000000000000000 lcd_clear
-     /tmp/ccoYxPzr.s:214    .text.lcd_position:0000000000000000 lcd_position
+     /tmp/ccq8PtR5.s:2      *ABS*:000000000000003e __SP_H__
+     /tmp/ccq8PtR5.s:3      *ABS*:000000000000003d __SP_L__
+     /tmp/ccq8PtR5.s:4      *ABS*:000000000000003f __SREG__
+     /tmp/ccq8PtR5.s:5      *ABS*:0000000000000000 __tmp_reg__
+     /tmp/ccq8PtR5.s:6      *ABS*:0000000000000001 __zero_reg__
+     /tmp/ccq8PtR5.s:13     .text.lcd_write:0000000000000000 lcd_write
+     /tmp/ccq8PtR5.s:81     .text.lcd_init:0000000000000000 lcd_init
+     /tmp/ccq8PtR5.s:169    .text.lcd_clear:0000000000000000 lcd_clear
+     /tmp/ccq8PtR5.s:214    .text.lcd_position:0000000000000000 lcd_position
 
 NO UNDEFINED SYMBOLS

@@ -1,12 +1,3 @@
-#
-# 	CAB202
-#	Generic Makefile for compiling with floating point printf
-#
-#	B.Talbot, September 2015
-#	Queensland University of Technology
-#
-
-# Modify these
 SRC=a2_n9749331
 
 CAB202_LIB_DIR=../cab202_teensy

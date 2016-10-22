@@ -1029,11 +1029,11 @@
  912 000c 00        		.byte	0
  913 000d 07        		.byte	7
  914 000e 00        		.byte	0
- 915 000f 0C        		.byte	12
- 916 0010 3E        		.byte	62
- 917 0011 7C        		.byte	124
- 918 0012 3E        		.byte	62
- 919 0013 0C        		.byte	12
+ 915 000f 14        		.byte	20
+ 916 0010 7F        		.byte	127
+ 917 0011 14        		.byte	20
+ 918 0012 7F        		.byte	127
+ 919 0013 14        		.byte	20
  920 0014 24        		.byte	36
  921 0015 2A        		.byte	42
  922 0016 7F        		.byte	127
@@ -1501,19 +1501,19 @@
  1384               		.file 4 "lcd.h"
 DEFINED SYMBOLS
                             *ABS*:0000000000000000 graphics.c
-     /tmp/ccVmY8qp.s:2      *ABS*:000000000000003e __SP_H__
-     /tmp/ccVmY8qp.s:3      *ABS*:000000000000003d __SP_L__
-     /tmp/ccVmY8qp.s:4      *ABS*:000000000000003f __SREG__
-     /tmp/ccVmY8qp.s:5      *ABS*:0000000000000000 __tmp_reg__
-     /tmp/ccVmY8qp.s:6      *ABS*:0000000000000001 __zero_reg__
-     /tmp/ccVmY8qp.s:13     .text.show_screen:0000000000000000 show_screen
+     /tmp/cccyw3oW.s:2      *ABS*:000000000000003e __SP_H__
+     /tmp/cccyw3oW.s:3      *ABS*:000000000000003d __SP_L__
+     /tmp/cccyw3oW.s:4      *ABS*:000000000000003f __SREG__
+     /tmp/cccyw3oW.s:5      *ABS*:0000000000000000 __tmp_reg__
+     /tmp/cccyw3oW.s:6      *ABS*:0000000000000001 __zero_reg__
+     /tmp/cccyw3oW.s:13     .text.show_screen:0000000000000000 show_screen
                             *COM*:00000000000001f8 screen_buffer
-     /tmp/ccVmY8qp.s:62     .text.clear_screen:0000000000000000 clear_screen
-     /tmp/ccVmY8qp.s:92     .text.set_pixel:0000000000000000 set_pixel
-     /tmp/ccVmY8qp.s:176    .text.draw_line:0000000000000000 draw_line
-     /tmp/ccVmY8qp.s:654    .text.draw_char:0000000000000000 draw_char
-     /tmp/ccVmY8qp.s:899    .progmem.data:0000000000000000 ASCII
-     /tmp/ccVmY8qp.s:836    .text.draw_string:0000000000000000 draw_string
+     /tmp/cccyw3oW.s:62     .text.clear_screen:0000000000000000 clear_screen
+     /tmp/cccyw3oW.s:92     .text.set_pixel:0000000000000000 set_pixel
+     /tmp/cccyw3oW.s:176    .text.draw_line:0000000000000000 draw_line
+     /tmp/cccyw3oW.s:654    .text.draw_char:0000000000000000 draw_char
+     /tmp/cccyw3oW.s:899    .progmem.data:0000000000000000 ASCII
+     /tmp/cccyw3oW.s:836    .text.draw_string:0000000000000000 draw_string
 
 UNDEFINED SYMBOLS
 lcd_position
