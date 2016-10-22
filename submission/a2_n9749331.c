@@ -16,9 +16,11 @@
 #define debounceDelay 10 // Debounce delay in ms
 int lives = 5; // Lives
 int score = 1;  // Our score
+int scoreModifier = 1;
 int snekTrail = 1; // How many trailing snekz
 int randomX;
 int randomY;
+int tick;
 
 Sprite heart[5];
 Sprite snekz[25];
@@ -35,7 +37,7 @@ int main() {
     initADC();
     srand(readADC(0));
     randomX = rand() % 84;
-    randomY = (rand() % (48 + 1 - 6)) + 6;
+    randomY = (rand() % (48 + 1 - 8)) + 8;
 
     set_clock_speed(CPU_8MHz);
     setupIO(); // Run meh setup code
@@ -45,37 +47,25 @@ int main() {
     foodz.y = randomY;
 
     while (1) {
-
+        tick++;
+        srand(tick);
         if (lives < 1) {
             gameOver();  // If we die, end the game - does a soft reset so it starts again.
         }
 
-        if (readJoy("left")) {
-            _delay_ms(debounceDelay);
-            if (readJoy("left")) {
-                snekz[0].dx = -1;
-            }
-        }
-        if (readJoy("right")) {
-            _delay_ms(debounceDelay);
-            if (readJoy("right")) {
-                snekz[0].dx = 1;
-            }
-        }
+        processInputs();
 
         clear_screen(); // Clear the last frame so we can draw the next one
 
-        char int_buf[10];
-        //char disp_buf[32];
-        itoa(readADC(1)/200+1, int_buf, 10);
-        //sprintf(disp_buf,"ADC1 = %s",int_buf);
-        //centerString(25, disp_buf);
+        char buf[10];
+        itoa(readADC(1)/340.0+1, buf, 10);
 
         collideFood();
         moveSnek(readADC(1)/300+1);
         drawHearts(lives); // Update the hearts (lives left)
         drawSprites(); // Update all the sprites
-
+        sprintf(buf, "%d", score);
+        draw_string(0,0, buf);
         show_screen(); // Push everything to the LCD
         _delay_ms(10); // Make it a bit smoother
     }

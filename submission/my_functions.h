@@ -285,18 +285,17 @@ void gameOver() {
 
 // Draw all of our sprites
 void drawSprites() {
-
-    // Our snekz
-    for (int i = 0; i < 24; i++) {
-        draw_sprite2(&snekz[i], 3);
-    }
-
     // Our heart/lives indicator
     for (int i = 0; i < 5; i++) {
         draw_sprite(&heart[i]);
     }
     // Our foodz
     draw_sprite2(&foodz, 3);
+
+    // Our snekz
+    for (int i = 0; i < 24; i++) {
+        draw_sprite2(&snekz[i], 3);
+    }
 }
 
 // Draw our hearts (lives left)
@@ -309,7 +308,18 @@ void drawHearts(int lives) {
     }
 }
 
-void collideFood() {
+int collideFood() {
+    if (snekz[0].x >= foodz.x && snekz[0].x <= foodz.x + 3 && snekz[0].y >= foodz.y && snekz[0].y <= foodz.y + 3) {
+        flashLeds(1);
+        score += scoreModifier;
+        randomX = rand() % 84;
+        randomY = (rand() % (48 + 1 - 8)) + 8;
+        foodz.x = randomX;
+        foodz.y = randomY;
+        draw_sprite2(&foodz, 3);
+        return 1;
+    }
+    else return 0;
 }
 
 // Move snek according to dy dx values
@@ -317,9 +327,65 @@ void moveSnek(int gameSpeed) {
     snekz[0].x += snekz[0].dx * gameSpeed;
     snekz[0].y += snekz[0].dy * gameSpeed;
 
-    if (snekz[0].x >= 84) { snekz[0].x = 0; }
-    else if (snekz[0].x < 1) { snekz[0].x = 83; }
+    if (snekz[0].x > 81) { snekz[0].x = 0; }
+    else if (snekz[0].x < 1) { snekz[0].x = 81; }
 
-    if (snekz[0].y >= 45) { snekz[0].x = 6; }
-    else if (snekz[0].y <= 6) { snekz[0].x = 45; }
+    if (snekz[0].y > 45) { snekz[0].y = 8; }
+    else if (snekz[0].y < 8) { snekz[0].y = 45; }
+}
+
+void loseLife() {
+    lives -= 1;
+    flashLeds(1);
+}
+
+void processInputs() {
+    if (readJoy("left")) {
+        _delay_ms(debounceDelay);
+        if (readJoy("left")) {
+            if (snekz[0].dx == 1) {
+                loseLife();
+            }
+            else {
+                snekz[0].dx = -1;
+                snekz[0].dy = 0;
+            }
+        }
+    }
+    else if (readJoy("right")) {
+        _delay_ms(debounceDelay);
+        if (readJoy("right")) {
+            if (snekz[0].dx == -1) {
+                loseLife();
+            }
+            else {
+                snekz[0].dx = 1;
+                snekz[0].dy = 0;
+            }
+        }
+    }
+    else if (readJoy("up")) {
+        _delay_ms(debounceDelay);
+        if (readJoy("up")) {
+            if (snekz[0].dy == 1) {
+                loseLife();
+            }
+            else {
+                snekz[0].dy = -1;
+                snekz[0].dx = 0;
+            }
+        }
+    }
+    else if (readJoy("down")) {
+        _delay_ms(debounceDelay);
+        if (readJoy("down")) {
+            if (snekz[0].dy == -1) {
+                loseLife();
+            }
+            else {
+                snekz[0].dy = 1;
+                snekz[0].dx = 0;
+            }
+        }
+    }
 }
