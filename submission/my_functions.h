@@ -1,3 +1,6 @@
+// Jaimyn Mayer (n9749331) 2016 for QUT CAB202
+// These helper functions control most of the low level stuff and the game logic functions control most of the gameplay.
+
 /////////////////////////////////////////////////  HELPER FUNCTIONS   /////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -143,11 +146,11 @@ void flashLeds(int times) {
         led0(1);
         led1(0);
         lcdLight(0);
-        _delay_ms(250);
+        _delay_ms(150);
         led0(0);
         led1(1);
         lcdLight(1);
-        _delay_ms(250);
+        _delay_ms(150);
         led1(0);
     }
 }
@@ -246,9 +249,9 @@ void setupSprites() {
     foodz.is_visible = 1;
 
     // Our snekz
-    init_sprite(&snekz[0], 5, 10, 8, 3, snekzbm[0]);
+    init_sprite(&snekz[0], 40, 24, 8, 3, snekzbm[0]);
     for (int i = 1; i < maxSnekz; i++) {
-        init_sprite(&snekz[i], i * 4, 10, 8, 3, snekzbm[1]);
+        init_sprite(&snekz[i], 40, 24, 8, 3, snekzbm[1]);
         snekz[i].dx = 0;
         snekz[i].dy = 0;
         snekz[i].is_visible = 0;
@@ -263,8 +266,8 @@ void setupSprites() {
         heart[i].is_visible = 1;
     }
 
-    // Our foodz
-    init_sprite(&ff, 20, 0, 8, 7, ffbm);
+    // Our fast forward button
+    init_sprite(&ff, 15, 0, 8, 7, ffbm);
     ff.is_visible = 1;
 }
 
@@ -284,6 +287,25 @@ void gameOver() {
         _delay_ms(500);
     }
     _delay_ms(2000);
+    soft_reset();
+}
+
+void winnerChickenDinner() {
+    led0(0);
+    led1(0);
+    clear_screen();
+    drawDankBorder();
+    centerString(10, "Winner Winner");
+    centerString(20, "Chiecken Dinner");
+    centerString(30, "(you won)");
+    show_screen();
+    for (int i = 0; i < 2; i++) {
+        lcdLight(0);
+        _delay_ms(500);
+        lcdLight(1);
+        _delay_ms(500);
+    }
+    _delay_ms(2500);
     soft_reset();
 }
 
@@ -310,22 +332,6 @@ void drawHearts(int lives) {
     }
     for (int i = lives; i < 5; i++) {
         heart[i].is_visible = 0;
-    }
-}
-
-int foodCollision() {
-    if (snekz[0].x + 3 < foodz.x || snekz[0].x > foodz.x + 3 || snekz[0].y + 3 < foodz.y || snekz[0].y > foodz.y + 3) {
-        return 0;
-    }
-    else {
-        flashLeds(1);
-        score += scoreModifier;
-        snekBodies++;
-        randomX = (rand() % (81 + 1 - 1)) + 1;
-        randomY = (rand() % (45 + 1 - 8)) + 8;
-        foodz.x = randomX;
-        foodz.y = randomY;
-        return 1;
     }
 }
 
@@ -360,9 +366,26 @@ void moveSnek() {
 void loseLife() {
     lives -= 1;
     flashLeds(1);
+    snekBodies = 3;
+    snekz[0].dx = 0;
+    snekz[0].dy = 0;
+}
+
+void drawWalls() {
+    if (walls) {
+        scoreModifier = 2;
+        draw_line(line1[0], line1[1], line1[2], line1[3]); // Draw 1
+        draw_line(line2[0], line2[1], line2[2], line2[3]); // Draw 1
+        draw_line(line3[0], line3[1], line3[2], line3[3]); // Draw 1
+    }
+    else scoreModifier = 1;
 }
 
 void processInputs() {
+    gameSpeed = readADC(1) / speedScaleFactor + minSpeedModifier;
+    if (readSwitch(3)) walls = 1;
+    else if (readSwitch(2)) walls = 0;
+
     if (readJoy("left")) {
         if (millis < 1) lastInput = millis;
         if (millis > lastInput + 20) {
@@ -424,4 +447,54 @@ void processInputs() {
             }
         }
     }
+}
+
+void homeSnek() {
+    snekBodies = startSnekz;
+    snekz[0].x = 40;
+    snekz[0].y = 23;
+}
+
+int foodCollision() {
+    if (snekz[0].x + 3 < foodz.x || snekz[0].x > foodz.x + 3 || snekz[0].y + 3 < foodz.y || snekz[0].y > foodz.y + 3) {
+        return 0;
+    }
+    else {
+        flashLeds(1);
+        score += scoreModifier;
+        snekBodies++;
+        randomX = (rand() % (81 + 1 - 1)) + 1;
+        randomY = (rand() % (42 + 1 - 8)) + 8;
+        foodz.x = randomX;
+        foodz.y = randomY;
+        return 1;
+    }
+}
+
+void collided() {
+    loseLife();
+    homeSnek();
+}
+
+int snekCollision() {
+    if (snekBodies > 3) {
+        for (int i = 3; i < maxSnekz; i++) {
+            if (snekz[0].x == snekz[i].x && snekz[0].y == snekz[i].y) {
+                collided();
+            }
+        }
+    }
+
+    if (walls) {
+        if (snekz[0].x < 42 && snekz[0].y + 3 > 43) collided();
+
+        else if (snekz[0].x < 6 && snekz[0].y < 29) collided();
+
+        else if (snekz[0].x > 57 && snekz[0].y < 16 && snekz[0].y > 11) collided();
+
+        else {
+            return 0;
+        }
+    }
+    return 1;
 }
